@@ -140,7 +140,7 @@ const QUESTION_BANK = [
 
 // --- FROM services/gameService.js ---
 let usedQuestionIds = new Set();
-const generateQuizQuestion = async () => {
+const generateQuizQuestion = () => {
   try {
     let availableQuestions = QUESTION_BANK.filter(q => !usedQuestionIds.has(q.id));
     if (availableQuestions.length === 0) {
@@ -151,22 +151,23 @@ const generateQuizQuestion = async () => {
     const randomIndex = Math.floor(Math.random() * availableQuestions.length);
     const question = availableQuestions[randomIndex];
     usedQuestionIds.add(question.id);
-    await new Promise(resolve => setTimeout(resolve, 200));
-    return question;
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(question), 200);
+    });
   } catch (error) {
     console.error("Error fetching question from bank:", error);
-    return {
+    return Promise.resolve({
       id: 'fallback-01',
       code: 'def greet(name)\n    print("Hello, " + name)',
       errorLine: 1,
       correctLineText: 'def greet(name):',
       explanation: 'Syntax Error: A function definition must end with a colon (:).',
       errorType: 'SyntaxError',
-    };
+    });
   }
 };
 
-const recordAnswer = async (result) => {
+const recordAnswer = (result) => {
   console.log('RECORDING TO GOOGLE SHEET (SIMULATED):', {
     spreadsheetId: 'YOUR_SPREADSHEET_ID',
     tabName: 'Results',
@@ -181,7 +182,9 @@ const recordAnswer = async (result) => {
       result.timeTakenMs
     ]
   });
-  await new Promise(resolve => setTimeout(resolve, 300));
+  return new Promise((resolve) => {
+    setTimeout(resolve, 300);
+  });
 };
 
 // --- FROM services/firebase.js ---
@@ -297,16 +300,17 @@ const StartScreen = () => {
     const [isSigningIn, setIsSigningIn] = React.useState(false);
     const [error, setError] = React.useState(null);
 
-    const handleSignIn = async () => {
+    const handleSignIn = () => {
         setIsSigningIn(true);
         setError(null);
-        try {
-            await signInWithGoogle();
-        } catch (err) {
-            console.error("Google Sign-In Error:", err);
-            setError("Failed to sign in. Please try again.");
-            setIsSigningIn(false);
-        }
+        signInWithGoogle()
+            .catch((err) => {
+                console.error("Google Sign-In Error:", err);
+                setError("Failed to sign in. Please try again.");
+            })
+            .finally(() => {
+                setIsSigningIn(false);
+            });
     };
 
   return (
@@ -362,7 +366,7 @@ const GameScreen = ({ user, onGameEnd, onSignOut, isFinished = false }) => {
   const timerRef = React.useRef(null);
   const questionStartTimeRef = React.useRef(0);
 
-  const loadNextQuestion = React.useCallback(async () => {
+  const loadNextQuestion = React.useCallback(() => {
     if (questionIndex >= TOTAL_QUESTIONS) {
       onGameEnd(score);
       return;
@@ -374,11 +378,28 @@ const GameScreen = ({ user, onGameEnd, onSignOut, isFinished = false }) => {
     setIsAnswered(false);
     setFeedback(null);
     
-    const question = await generateQuizQuestion();
-    setCurrentQuestion(question);
-    setLoading(false);
-    setTimeRemaining(QUESTION_TIME_LIMIT_MS);
-    questionStartTimeRef.current = Date.now();
+    generateQuizQuestion()
+      .then((question) => {
+        setCurrentQuestion(question);
+        setTimeRemaining(QUESTION_TIME_LIMIT_MS);
+        questionStartTimeRef.current = Date.now();
+      })
+      .catch((error) => {
+        console.error('Error loading question:', error);
+        setCurrentQuestion({
+          id: 'error',
+          code: 'print("Something went wrong loading the question.")',
+          errorLine: 1,
+          correctLineText: 'print("Something went wrong loading the question.")',
+          explanation: 'An unexpected error occurred while loading a question.',
+          errorType: 'SystemError',
+        });
+        setTimeRemaining(QUESTION_TIME_LIMIT_MS);
+        questionStartTimeRef.current = Date.now();
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [questionIndex, onGameEnd, score]);
 
   React.useEffect(() => {
@@ -399,6 +420,8 @@ const GameScreen = ({ user, onGameEnd, onSignOut, isFinished = false }) => {
       isCorrect: false,
       score: 0,
       timeTakenMs: QUESTION_TIME_LIMIT_MS,
+    }).catch((error) => {
+      console.error('Error recording timed-out answer:', error);
     });
   };
 
@@ -431,10 +454,10 @@ const GameScreen = ({ user, onGameEnd, onSignOut, isFinished = false }) => {
     setUserAnswer(lineText);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!currentQuestion || isAnswered) return;
     if (timerRef.current) clearInterval(timerRef.current);
-    
+
     setIsAnswered(true);
     const timeTaken = Date.now() - questionStartTimeRef.current;
     
@@ -461,15 +484,18 @@ const GameScreen = ({ user, onGameEnd, onSignOut, isFinished = false }) => {
         setFeedback({ correct: false, message: feedbackMessage });
     }
     
-    await recordAnswer({
-      userId: user.uid,
-      studentName: user.displayName,
-      questionId: currentQuestion.id,
-      errorType: currentQuestion.errorType,
-      isCorrect,
-      score: points,
-      timeTakenMs: timeTaken,
-    });
+    recordAnswer({
+        userId: user.uid,
+        studentName: user.displayName,
+        questionId: currentQuestion.id,
+        errorType: currentQuestion.errorType,
+        isCorrect,
+        score: points,
+        timeTakenMs: timeTaken,
+    })
+      .catch((error) => {
+        console.error('Error recording answer:', error);
+      });
   };
 
   return (
@@ -573,14 +599,15 @@ const App = () => {
     setIsGameFinished(false);
   }, []);
   
-  const handleSignOut = React.useCallback(async () => {
-    try {
-        await signOutUser();
+  const handleSignOut = React.useCallback(() => {
+    signOutUser()
+      .then(() => {
         setIsGameFinished(false);
         setFinalScore(0);
-    } catch (error) {
+      })
+      .catch((error) => {
         console.error("Error signing out:", error);
-    }
+      });
   }, []);
 
   const renderContent = () => {
