@@ -8,21 +8,30 @@ import {
   type User as FirebaseUser
 } from 'firebase/auth';
 
-// Firebase configuration is expected to be available in process.env
-// Ensure you have set up your environment variables (e.g., in a .env file for local development)
-const firebaseConfig: FirebaseOptions = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID,
+// --- IMPORTANT FOR DEPLOYMENT ---
+// For deploying to a static host like GitHub Pages, you cannot use environment variables.
+// Paste your Firebase configuration values here directly.
+//
+// SECURITY NOTE: It is safe to expose these keys in a client-side application.
+// Firebase secures your app through "Authorized Domains" in the Firebase Console,
+// NOT by keeping these keys secret. Make sure you have added your live URL
+// (e.g., "your-username.github.io") to the list of authorized domains in your
+// Firebase Authentication settings.
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAR16zteadug599v5PvuSSjXrbFUyQcQt8",
+  authDomain: "python-debugger.firebaseapp.com",
+  projectId: "python-debugger",
+  storageBucket: "python-debugger.firebasestorage.app",
+  messagingSenderId: "782501406778",
+  appId: "1:782501406778:web:e768aad3c984b9dfdead03",
+  measurementId: "G-GS3PP7XWQZ"
 };
 
 // Basic validation to help developers during setup
-if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-    const message = "Firebase configuration is missing or incomplete. Please ensure FIREBASE_ environment variables are set. The app may not function correctly.";
-    console.warn(message);
+if (firebaseConfig.apiKey === "YOUR_API_KEY_HERE" || !firebaseConfig.projectId) {
+    const message = "Firebase configuration is missing. Please edit `services/firebase.ts` and replace the placeholder values with your actual Firebase project configuration.";
+    console.error(message);
     // Display a message to the user on the screen
     const root = document.getElementById('root');
     if (root) {
