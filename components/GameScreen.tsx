@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { generateQuizQuestion, recordAnswer } from '../services/gameService';
-import type { QuizQuestion, User } from '../types';
-import { TOTAL_QUESTIONS, QUESTION_TIME_LIMIT_MS, MAX_SCORE_PER_QUESTION, MIN_SCORE_PER_QUESTION } from '../constants';
-import { SnakeProgressBar } from './SnakeProgressBar';
+import { generateQuizQuestion, recordAnswer } from '../services/gameService.ts';
+import type { QuizQuestion, User } from '../types.ts';
+import { TOTAL_QUESTIONS, QUESTION_TIME_LIMIT_MS, MAX_SCORE_PER_QUESTION, MIN_SCORE_PER_QUESTION } from '../constants.ts';
+import { SnakeProgressBar } from './SnakeProgressBar.tsx';
 
 interface GameScreenProps {
   user: User;
