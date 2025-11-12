@@ -1,5 +1,5 @@
-import type { QuizQuestion, GameResult } from '../types';
-import { QUESTION_BANK } from './questionBank';
+import type { QuizQuestion, GameResult } from '../types.ts';
+import { QUESTION_BANK } from './questionBank.ts';
 
 let usedQuestionIds: Set<string> = new Set();
 
