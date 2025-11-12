@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { PythonIcon } from './icons/PythonIcon';
 import { GoogleIcon } from './icons/GoogleIcon';
@@ -27,8 +28,7 @@ const StartScreen: React.FC = () => {
       </div>
       <h1 className="text-4xl font-bold text-cyan-400 mb-4">Python Debugger</h1>
       <p className="text-gray-300 mb-8 max-w-md mx-auto">
-        Find and fix bugs in Python code snippets. The faster you are, the higher your score!
-        Questions are generated dynamically by Gemini.
+        Find and fix bugs in Python code snippets. The faster you are, the higher your score! Test your debugging skills on a curated set of challenges.
       </p>
       <div className="flex flex-col items-center gap-4">
         <button
