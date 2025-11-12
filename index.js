@@ -185,18 +185,14 @@ const recordAnswer = async (result) => {
 };
 
 // --- FROM services/firebase.js ---
-const firebaseAppModule = await import('firebase/app');
-const firebaseAuthModule = await import('firebase/auth');
-
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// NOTE: We are now using the globally available `firebase` object from the CDN script.
 const firebaseConfig = {
-  apiKey: "AIzaSyAR16zteadug599v5PvuSSjXrbFUyQcQt8",
-  authDomain: "python-debugger.firebaseapp.com",
-  projectId: "python-debugger",
-  storageBucket: "python-debugger.firebasestorage.app",
-  messagingSenderId: "782501406778",
-  appId: "1:782501406778:web:e768aad3c984b9dfdead03",
-  measurementId: "G-GS3PP7XWQZ"
+  apiKey: "YOUR_API_KEY_HERE",
+  authDomain: "YOUR_AUTH_DOMAIN_HERE",
+  projectId: "YOUR_PROJECT_ID_HERE",
+  storageBucket: "YOUR_STORAGE_BUCKET_HERE",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID_HERE",
+  appId: "YOUR_APP_ID_HERE",
 };
 
 if (firebaseConfig.apiKey === "YOUR_API_KEY_HERE" || !firebaseConfig.projectId) {
@@ -208,15 +204,16 @@ if (firebaseConfig.apiKey === "YOUR_API_KEY_HERE" || !firebaseConfig.projectId) 
     }
 }
 
-const app = firebaseAppModule.initializeApp(firebaseConfig);
-const auth = firebaseAuthModule.getAuth(app);
-const provider = new firebaseAuthModule.GoogleAuthProvider();
+const app = firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const provider = new firebase.auth.GoogleAuthProvider();
 
-const signInWithGoogle = () => firebaseAuthModule.signInWithPopup(auth, provider);
-const signOutUser = () => firebaseAuthModule.signOut(auth);
+const signInWithGoogle = () => firebase.auth().signInWithPopup(provider);
+const signOutUser = () => firebase.auth().signOut();
 const onAuthStateChanged = (callback) => {
-    return firebaseAuthModule.onAuthStateChanged(auth, callback);
+    return firebase.auth().onAuthStateChanged(callback);
 };
+
 
 // --- FROM components/icons/GoogleIcon.js ---
 const GoogleIcon = ({ className }) => (
