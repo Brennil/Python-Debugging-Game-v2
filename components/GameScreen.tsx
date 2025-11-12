@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { generateQuizQuestion, recordAnswer } from '../services/geminiService';
+import { generateQuizQuestion, recordAnswer } from '../services/gameService';
 import type { QuizQuestion, User } from '../types';
 import { TOTAL_QUESTIONS, QUESTION_TIME_LIMIT_MS, MAX_SCORE_PER_QUESTION, MIN_SCORE_PER_QUESTION } from '../constants';
 import { SnakeProgressBar } from './SnakeProgressBar';
@@ -171,7 +171,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ user, onGameEnd, onSignOut, isF
       <SnakeProgressBar progress={(questionIndex / TOTAL_QUESTIONS) * 100} />
       <div className="w-full bg-gray-700 rounded-full h-2.5 mb-6"><div className="bg-yellow-400 h-2.5 rounded-full transition-all duration-100" style={{ width: `${(timeRemaining / QUESTION_TIME_LIMIT_MS) * 100}%` }}></div></div>
 
-      {loading && <div className="text-center p-8">Loading question from Gemini...</div>}
+      {loading && <div className="text-center p-8">Loading question...</div>}
 
       {currentQuestion && (
         <>
