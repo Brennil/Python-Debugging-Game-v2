@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
-import { PythonIcon } from './icons/PythonIcon';
-import { GoogleIcon } from './icons/GoogleIcon';
-import { signInWithGoogle } from '../services/firebase';
+import { PythonIcon } from './icons/PythonIcon.tsx';
+import { GoogleIcon } from './icons/GoogleIcon.tsx';
+import { signInWithGoogle } from '../services/firebase.ts';
 
 const StartScreen: React.FC = () => {
     const [isSigningIn, setIsSigningIn] = useState(false);
