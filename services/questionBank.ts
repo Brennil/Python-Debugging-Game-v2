@@ -1,5 +1,4 @@
-
-import type { QuizQuestion } from '../types';
+import type { QuizQuestion } from '../types.ts';
 
 export const QUESTION_BANK: QuizQuestion[] = [
     // Syntax Errors
