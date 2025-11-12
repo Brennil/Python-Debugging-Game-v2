@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import StartScreen from './components/StartScreen';
-import GameScreen from './components/GameScreen';
-import FinalScoreModal from './components/FinalScoreModal';
-import { onAuthStateChanged, signOutUser } from './services/firebase';
-import type { User } from './types';
+import StartScreen from './components/StartScreen.tsx';
+import GameScreen from './components/GameScreen.tsx';
+import FinalScoreModal from './components/FinalScoreModal.tsx';
+import { onAuthStateChanged, signOutUser } from './services/firebase.ts';
+import type { User } from './types.ts';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
