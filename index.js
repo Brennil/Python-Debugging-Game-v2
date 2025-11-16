@@ -13,134 +13,14 @@ const MAX_SCORE_PER_QUESTION = 100;
 const MIN_SCORE_PER_QUESTION = 10;
 
 // --- FROM services/questionBank.js ---
-const QUESTION_BANK = [
-    // Syntax Errors
-    {
-        id: 'syn-01',
-        code: 'def my_function()\n  print("Hello")',
-        errorLine: 1,
-        correctLineText: 'def my_function():',
-        explanation: 'Syntax Error: A function definition must end with a colon (:).',
-        errorType: 'SyntaxError',
-    },
-    {
-        id: 'syn-02',
-        code: 'name = "Alice"\nif name == "Alice"\n  print("Hi Alice!")',
-        errorLine: 2,
-        correctLineText: 'if name == "Alice":',
-        explanation: 'Syntax Error: An if statement requires a colon (:) at the end of the line.',
-        errorType: 'SyntaxError',
-    },
-    {
-        id: 'syn-03',
-        code: '# Python 3 code\nprint "Hello, world!"',
-        errorLine: 2,
-        correctLineText: 'print("Hello, world!")',
-        explanation: "SyntaxError: In Python 3, print is a function and requires parentheses.",
-        errorType: 'SyntaxError'
-    },
-    {
-        id: 'syn-04',
-        code: 'message = "Hello, world\'\nprint(message)',
-        errorLine: 1,
-        correctLineText: 'message = "Hello, world"',
-        explanation: "SyntaxError: You started the string with a double quote but ended with a single quote.",
-        errorType: 'SyntaxError'
-    },
-    // Indentation Error
-    {
-        id: 'ind-01',
-        code: 'def say_hello():\nprint("Welcome")',
-        errorLine: 2,
-        correctLineText: '  print("Welcome")',
-        explanation: 'IndentationError: The code inside a function must be indented.',
-        errorType: 'IndentationError',
-    },
-    // Name Error
-    {
-        id: 'nam-01',
-        code: 'message = "Hello World"\nprint(mesage)',
-        errorLine: 2,
-        correctLineText: 'print(message)',
-        explanation: 'NameError: The variable "mesage" is not defined. It\'s likely a typo for "message".',
-        errorType: 'NameError',
-    },
-    // Type Error
-    {
-        id: 'typ-01',
-        code: 'count = 5\nmessage = "You have " + count + " new messages."\nprint(message)',
-        errorLine: 2,
-        correctLineText: 'message = "You have " + str(count) + " new messages."',
-        explanation: 'TypeError: You cannot concatenate a string with an integer. Use str() to convert the number to a string first.',
-        errorType: 'TypeError',
-    },
-    // Index Error
-    {
-        id: 'idx-01',
-        code: 'letters = ["a", "b", "c"]\nprint(letters[3])',
-        errorLine: 2,
-        correctLineText: 'print(letters[2])',
-        explanation: 'IndexError: The list index is out of range. The last item is at index 2.',
-        errorType: 'IndexError',
-    },
-    // Key Error
-    {
-        id: 'key-01',
-        code: 'student = {"name": "Bob", "age": 20}\nprint(student["grade"])',
-        errorLine: 2,
-        correctLineText: 'print(student["age"])',
-        explanation: 'KeyError: The key "grade" does not exist in the dictionary.',
-        errorType: 'KeyError',
-    },
-    // Value Error
-    {
-        id: 'val-01',
-        code: 'number_str = "ten"\nnumber_int = int(number_str)',
-        errorLine: 2,
-        correctLineText: 'number_str = "10"',
-        explanation: 'ValueError: The int() function cannot convert the string "ten" to an integer.',
-        errorType: 'ValueError',
-    },
-    // Logical Error
-    {
-        id: 'log-01',
-        code: 'numbers = [1, 2, 3, 4, 5]\nfor num in numbers:\n  if num % 2 == 1:\n    print(f"{num} is an even number.")',
-        errorLine: 3,
-        correctLineText: '  if num % 2 == 0:',
-        explanation: 'Logical Error: The condition for an even number is `num % 2 == 0`, not 1.',
-        errorType: 'Logical Error',
-    },
-    {
-        id: 'log-02',
-        code: 'x = 10\nif x = 5:\n  print("x is 5")',
-        errorLine: 2,
-        correctLineText: 'if x == 5:',
-        explanation: "SyntaxError: Use `==` for comparison and `=` for assignment. This line should be `if x == 5:`.",
-        errorType: 'SyntaxError'
-    },
-    // ZeroDivisionError
-    {
-        id: 'zer-01',
-        code: 'numerator = 10\ndenominator = 0\nresult = numerator / denominator',
-        errorLine: 3,
-        correctLineText: 'denominator = 1',
-        explanation: 'ZeroDivisionError: You cannot divide a number by zero.',
-        errorType: 'ZeroDivisionError'
-    },
-    // AttributeError
-    {
-        id: 'att-01',
-        code: 'my_list = [1, 2, 3]\nmy_list.append(4)\nmy_list.sort()\nprint(my_list.length)',
-        errorLine: 4,
-        correctLineText: 'print(len(my_list))',
-        explanation: "AttributeError: List objects don't have a 'length' attribute. Use the len() function to get the length of a list.",
-        errorType: 'AttributeError'
-    },
-];
+const QUESTION_BANK = Array.isArray(window.QUESTION_BANK) ? window.QUESTION_BANK : [];
+if (!Array.isArray(window.QUESTION_BANK)) {
+  console.warn('Question bank failed to load from questions.js. Using empty question set instead.');
+}
 
 // --- FROM services/gameService.js ---
 let usedQuestionIds = new Set();
-const generateQuizQuestion = async () => {
+const generateQuizQuestion = () => {
   try {
     let availableQuestions = QUESTION_BANK.filter(q => !usedQuestionIds.has(q.id));
     if (availableQuestions.length === 0) {
@@ -148,25 +28,29 @@ const generateQuizQuestion = async () => {
       usedQuestionIds.clear();
       availableQuestions = QUESTION_BANK;
     }
+    if (availableQuestions.length === 0) {
+      throw new Error('Question bank is empty.');
+    }
     const randomIndex = Math.floor(Math.random() * availableQuestions.length);
     const question = availableQuestions[randomIndex];
     usedQuestionIds.add(question.id);
-    await new Promise(resolve => setTimeout(resolve, 200));
-    return question;
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(question), 200);
+    });
   } catch (error) {
     console.error("Error fetching question from bank:", error);
-    return {
+    return Promise.resolve({
       id: 'fallback-01',
       code: 'def greet(name)\n    print("Hello, " + name)',
       errorLine: 1,
       correctLineText: 'def greet(name):',
       explanation: 'Syntax Error: A function definition must end with a colon (:).',
       errorType: 'SyntaxError',
-    };
+    });
   }
 };
 
-const recordAnswer = async (result) => {
+const recordAnswer = (result) => {
   console.log('RECORDING TO GOOGLE SHEET (SIMULATED):', {
     spreadsheetId: 'YOUR_SPREADSHEET_ID',
     tabName: 'Results',
@@ -181,7 +65,9 @@ const recordAnswer = async (result) => {
       result.timeTakenMs
     ]
   });
-  await new Promise(resolve => setTimeout(resolve, 300));
+  return new Promise((resolve) => {
+    setTimeout(resolve, 300);
+  });
 };
 
 // --- FROM services/firebase.js ---
@@ -297,16 +183,17 @@ const StartScreen = () => {
     const [isSigningIn, setIsSigningIn] = React.useState(false);
     const [error, setError] = React.useState(null);
 
-    const handleSignIn = async () => {
+    const handleSignIn = () => {
         setIsSigningIn(true);
         setError(null);
-        try {
-            await signInWithGoogle();
-        } catch (err) {
-            console.error("Google Sign-In Error:", err);
-            setError("Failed to sign in. Please try again.");
-            setIsSigningIn(false);
-        }
+        signInWithGoogle()
+            .catch((err) => {
+                console.error("Google Sign-In Error:", err);
+                setError("Failed to sign in. Please try again.");
+            })
+            .finally(() => {
+                setIsSigningIn(false);
+            });
     };
 
   return (
@@ -362,7 +249,7 @@ const GameScreen = ({ user, onGameEnd, onSignOut, isFinished = false }) => {
   const timerRef = React.useRef(null);
   const questionStartTimeRef = React.useRef(0);
 
-  const loadNextQuestion = React.useCallback(async () => {
+  const loadNextQuestion = React.useCallback(() => {
     if (questionIndex >= TOTAL_QUESTIONS) {
       onGameEnd(score);
       return;
@@ -374,11 +261,28 @@ const GameScreen = ({ user, onGameEnd, onSignOut, isFinished = false }) => {
     setIsAnswered(false);
     setFeedback(null);
     
-    const question = await generateQuizQuestion();
-    setCurrentQuestion(question);
-    setLoading(false);
-    setTimeRemaining(QUESTION_TIME_LIMIT_MS);
-    questionStartTimeRef.current = Date.now();
+    generateQuizQuestion()
+      .then((question) => {
+        setCurrentQuestion(question);
+        setTimeRemaining(QUESTION_TIME_LIMIT_MS);
+        questionStartTimeRef.current = Date.now();
+      })
+      .catch((error) => {
+        console.error('Error loading question:', error);
+        setCurrentQuestion({
+          id: 'error',
+          code: 'print("Something went wrong loading the question.")',
+          errorLine: 1,
+          correctLineText: 'print("Something went wrong loading the question.")',
+          explanation: 'An unexpected error occurred while loading a question.',
+          errorType: 'SystemError',
+        });
+        setTimeRemaining(QUESTION_TIME_LIMIT_MS);
+        questionStartTimeRef.current = Date.now();
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [questionIndex, onGameEnd, score]);
 
   React.useEffect(() => {
@@ -399,6 +303,8 @@ const GameScreen = ({ user, onGameEnd, onSignOut, isFinished = false }) => {
       isCorrect: false,
       score: 0,
       timeTakenMs: QUESTION_TIME_LIMIT_MS,
+    }).catch((error) => {
+      console.error('Error recording timed-out answer:', error);
     });
   };
 
@@ -431,10 +337,10 @@ const GameScreen = ({ user, onGameEnd, onSignOut, isFinished = false }) => {
     setUserAnswer(lineText);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!currentQuestion || isAnswered) return;
     if (timerRef.current) clearInterval(timerRef.current);
-    
+
     setIsAnswered(true);
     const timeTaken = Date.now() - questionStartTimeRef.current;
     
@@ -461,15 +367,18 @@ const GameScreen = ({ user, onGameEnd, onSignOut, isFinished = false }) => {
         setFeedback({ correct: false, message: feedbackMessage });
     }
     
-    await recordAnswer({
-      userId: user.uid,
-      studentName: user.displayName,
-      questionId: currentQuestion.id,
-      errorType: currentQuestion.errorType,
-      isCorrect,
-      score: points,
-      timeTakenMs: timeTaken,
-    });
+    recordAnswer({
+        userId: user.uid,
+        studentName: user.displayName,
+        questionId: currentQuestion.id,
+        errorType: currentQuestion.errorType,
+        isCorrect,
+        score: points,
+        timeTakenMs: timeTaken,
+    })
+      .catch((error) => {
+        console.error('Error recording answer:', error);
+      });
   };
 
   return (
@@ -495,7 +404,9 @@ const GameScreen = ({ user, onGameEnd, onSignOut, isFinished = false }) => {
       {currentQuestion && (
         <>
           <p className="text-center text-gray-300 mb-6">
-            {selectedLine === null ? '1. Click the line of code with the error.' : '2. Now, type the corrected line of code.'}
+            {selectedLine === null
+              ? '1. Click the line of code with the error. You can change your selection any time before submitting.'
+              : '2. Now, type the corrected line of code.'}
           </p>
           <div className="bg-gray-900 rounded-lg p-4 mb-4 code-font text-sm md:text-base leading-relaxed">
             {currentQuestion.code.split('\n').map((line, i) => (
@@ -505,7 +416,7 @@ const GameScreen = ({ user, onGameEnd, onSignOut, isFinished = false }) => {
                 lineNumber={i + 1} 
                 onClick={() => handleLineSelect(i + 1)}
                 isSelected={selectedLine === i + 1}
-                isClickable={!isAnswered && selectedLine === null}
+                isClickable={!isAnswered}
               />
             ))}
           </div>
@@ -573,14 +484,15 @@ const App = () => {
     setIsGameFinished(false);
   }, []);
   
-  const handleSignOut = React.useCallback(async () => {
-    try {
-        await signOutUser();
+  const handleSignOut = React.useCallback(() => {
+    signOutUser()
+      .then(() => {
         setIsGameFinished(false);
         setFinalScore(0);
-    } catch (error) {
+      })
+      .catch((error) => {
         console.error("Error signing out:", error);
-    }
+      });
   }, []);
 
   const renderContent = () => {
