@@ -12,44 +12,6 @@ const QUESTION_TIME_LIMIT_MS = 20000; // 20 seconds
 const MAX_SCORE_PER_QUESTION = 100;
 const MIN_SCORE_PER_QUESTION = 10;
 
-// --- FROM services/questionBank.js ---
-const QUESTION_BANK = Array.isArray(window.QUESTION_BANK) ? window.QUESTION_BANK : [];
-if (!Array.isArray(window.QUESTION_BANK)) {
-  console.warn('Question bank failed to load from questions.js. Using empty question set instead.');
-}
-
-// --- FROM services/gameService.js ---
-let usedQuestionIds = new Set();
-const generateQuizQuestion = () => {
-  try {
-    let availableQuestions = QUESTION_BANK.filter(q => !usedQuestionIds.has(q.id));
-    if (availableQuestions.length === 0) {
-      console.warn("All unique questions have been used. Resetting question pool.");
-      usedQuestionIds.clear();
-      availableQuestions = QUESTION_BANK;
-    }
-    if (availableQuestions.length === 0) {
-      throw new Error('Question bank is empty.');
-    }
-    const randomIndex = Math.floor(Math.random() * availableQuestions.length);
-    const question = availableQuestions[randomIndex];
-    usedQuestionIds.add(question.id);
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(question), 200);
-    });
-  } catch (error) {
-    console.error("Error fetching question from bank:", error);
-    return Promise.resolve({
-      id: 'fallback-01',
-      code: 'def greet(name)\n    print("Hello, " + name)',
-      errorLine: 1,
-      correctLineText: 'def greet(name):',
-      explanation: 'Syntax Error: A function definition must end with a colon (:).',
-      errorType: 'SyntaxError',
-    });
-  }
-};
-
 const recordAnswer = (result) => {
   console.log('RECORDING TO GOOGLE SHEET (SIMULATED):', {
     spreadsheetId: 'YOUR_SPREADSHEET_ID',
@@ -94,12 +56,99 @@ if (firebaseConfig.apiKey === "YOUR_API_KEY_HERE" || !firebaseConfig.projectId) 
 
 const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.firestore();
 const provider = new firebase.auth.GoogleAuthProvider();
 
 const signInWithGoogle = () => firebase.auth().signInWithPopup(provider);
 const signOutUser = () => firebase.auth().signOut();
 const onAuthStateChanged = (callback) => {
     return firebase.auth().onAuthStateChanged(callback);
+};
+
+// --- FROM services/questionBank.js ---
+const questionBankState = {
+  questions: Array.isArray(window.QUESTION_BANK) ? window.QUESTION_BANK : [],
+  loadPromise: null,
+  loadedFromDatabase: false,
+};
+
+if (!Array.isArray(window.QUESTION_BANK)) {
+  console.warn('Question bank failed to load from questions.js. Using empty question set instead.');
+}
+
+const normalizeQuestion = (question, idFallback) => {
+  if (!question || !question.code || typeof question.errorLine !== 'number') {
+    return null;
+  }
+  return {
+    id: question.id || idFallback,
+    code: question.code,
+    errorLine: Number(question.errorLine),
+    correctLineText: question.correctLineText || '',
+    explanation: question.explanation || 'No explanation provided.',
+    errorType: question.errorType || 'Unknown',
+  };
+};
+
+const loadQuestionBank = () => {
+  if (questionBankState.loadPromise) {
+    return questionBankState.loadPromise;
+  }
+  if (!db) {
+    return Promise.resolve(questionBankState.questions);
+  }
+  questionBankState.loadPromise = db.collection('questions').get()
+    .then((snapshot) => {
+      const questions = snapshot.docs
+        .map((doc) => normalizeQuestion(doc.data(), doc.id))
+        .filter(Boolean);
+      if (questions.length > 0) {
+        questionBankState.questions = questions;
+        questionBankState.loadedFromDatabase = true;
+      } else {
+        console.warn('No questions found in Firestore. Falling back to questions.js.');
+      }
+      return questionBankState.questions;
+    })
+    .catch((error) => {
+      console.error('Failed to load questions from Firestore:', error);
+      return questionBankState.questions;
+    });
+  return questionBankState.loadPromise;
+};
+
+// --- FROM services/gameService.js ---
+let usedQuestionIds = new Set();
+const generateQuizQuestion = () => {
+  return loadQuestionBank()
+    .then((questions) => {
+      let availableQuestions = questions.filter(q => !usedQuestionIds.has(q.id));
+      if (availableQuestions.length === 0) {
+        console.warn("All unique questions have been used. Resetting question pool.");
+        usedQuestionIds.clear();
+        availableQuestions = questions;
+      }
+      if (availableQuestions.length === 0) {
+        throw new Error('Question bank is empty.');
+      }
+      const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+      const question = availableQuestions[randomIndex];
+      usedQuestionIds.add(question.id);
+      return new Promise((resolve) => {
+        setTimeout(() => resolve(question), 200);
+      });
+    })
+    .catch((error) => {
+      console.error("Error fetching question from bank:", error);
+      return Promise.resolve({
+        id: 'fallback-01',
+        code: 'def greet(name)\n    print("Hello, " + name)',
+        errorLine: 1,
+        correctLineText: 'def greet(name):',
+        explanation: 'Syntax Error: A function definition must end with a colon (:).',
+        errorType: 'SyntaxError',
+      });
+    });
 };
 
 
