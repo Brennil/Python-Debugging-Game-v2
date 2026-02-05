@@ -110,8 +110,8 @@ window.QUESTION_BANK = [
     // ZeroDivisionError
     {
         id: 'zer-01',
-        code: '# Divide two numbers to get a result\nnumerator = 10\ndenominator = 0\nresult = numerator / denominator',
-        errorLine: 4,
+        code: '# Divide 10 by 1\nnumerator = 10\ndenominator = 0\nresult = numerator / denominator',
+        errorLine: 3,
         correctLineText: 'denominator = 1',
         explanation: 'ZeroDivisionError: You cannot divide a number by zero.',
         errorType: 'ZeroDivisionError'
