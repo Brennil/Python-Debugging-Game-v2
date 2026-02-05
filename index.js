@@ -34,13 +34,15 @@ const recordAnswer = (result) => {
 
 // --- FROM services/firebase.js ---
 // NOTE: We are now using the globally available `firebase` object from the CDN script.
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "YOUR_AUTH_DOMAIN_HERE",
-  projectId: "YOUR_PROJECT_ID_HERE",
-  storageBucket: "YOUR_STORAGE_BUCKET_HERE",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID_HERE",
-  appId: "YOUR_APP_ID_HERE",
+  apiKey: "AIzaSyAR16zteadug599v5PvuSSjXrbFUyQcQt8",
+  authDomain: "python-debugger.firebaseapp.com",
+  projectId: "python-debugger",
+  storageBucket: "python-debugger.firebasestorage.app",
+  messagingSenderId: "782501406778",
+  appId: "1:782501406778:web:e768aad3c984b9dfdead03",
+  measurementId: "G-GS3PP7XWQZ"
 };
 
 if (firebaseConfig.apiKey === "YOUR_API_KEY_HERE" || !firebaseConfig.projectId) {
