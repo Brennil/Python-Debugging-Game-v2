@@ -76,7 +76,7 @@ window.QUESTION_BANK = [
     {
         id: 'key-01',
         code: '# Print the student\'s age\nstudent = {"name": "Bob", "age": 20}\nprint(student["grade"])',
-        errorLine: 2,
+        errorLine: 3,
         correctLineText: 'print(student["age"])',
         explanation: 'KeyError: The key "grade" does not exist in the dictionary.',
         errorType: 'KeyError',
