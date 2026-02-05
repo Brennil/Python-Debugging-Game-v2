@@ -23,7 +23,7 @@ window.QUESTION_BANK = [
     {
         id: 'syn-03',
         code: '# Print a greeting in Python 3\nprint "Hello, world!"',
-        errorLine: 3,
+        errorLine: 2,
         correctLineText: 'print("Hello, world!")',
         explanation: 'SyntaxError: In Python 3, print is a function and requires parentheses.',
         errorType: 'SyntaxError'
