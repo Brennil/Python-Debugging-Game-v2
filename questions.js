@@ -85,7 +85,7 @@ window.QUESTION_BANK = [
     {
         id: 'val-01',
         code: '# Convert a numeric string to an integer\nnumber_str = "ten"\nnumber_int = int(number_str)',
-        errorLine: 3,
+        errorLine: 2,
         correctLineText: 'number_str = "10"',
         explanation: 'ValueError: The int() function cannot convert the string "ten" to an integer.',
         errorType: 'ValueError',
